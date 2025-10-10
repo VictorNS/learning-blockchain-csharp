@@ -1,4 +1,4 @@
-# Learning Plan
+﻿# Learning Plan
 
 ## Stage 1. Preparation
 
