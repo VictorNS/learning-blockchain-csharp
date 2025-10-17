@@ -2,13 +2,21 @@
 
 namespace LearningBlockchain.Services;
 
-internal class MiningService
+public interface IMiningService
+{
+	bool IsValidBlock(Block block);
+	Block MineBlock(Block block);
+}
+
+public class MiningService : IMiningService
 {
 	private readonly ProofOfWorkSettings _settings;
+	private readonly IBlockHashService _blockHashService;
 
-	public MiningService(ProofOfWorkSettings currentSettings)
+	public MiningService(ProofOfWorkSettings settings, IBlockHashService blockHashService)
 	{
-		_settings = currentSettings;
+		_settings = settings;
+		_blockHashService = blockHashService;
 	}
 
 	public Block MineBlock(Block block)
@@ -17,7 +25,7 @@ internal class MiningService
 
 		for (ulong nonce = 0; nonce < _settings.MaxNonceAttempts; nonce++)
 		{
-			var hash = BlockHashService.ComputeBlockHash(block, nonce);
+			var hash = _blockHashService.ComputeBlockHash(block, nonce);
 
 			if (hash.StartsWith(requiredPrefix, StringComparison.Ordinal))
 				return block.GetMinedBlock(hash, nonce);
@@ -28,7 +36,7 @@ internal class MiningService
 
 	public bool IsValidBlock(Block block)
 	{
-		var hash = BlockHashService.ComputeBlockHash(block, block.Nonce);
+		var hash = _blockHashService.ComputeBlockHash(block, block.Nonce);
 		return hash == block.Hash && hash.StartsWith(new string('0', (int)block.Difficulty), StringComparison.Ordinal);
 	}
 }

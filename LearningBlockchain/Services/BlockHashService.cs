@@ -3,11 +3,17 @@ using LearningBlockchain.Models;
 
 namespace LearningBlockchain.Services;
 
-internal class BlockHashService
+public interface IBlockHashService
 {
-	public static string ComputeBlockHash(Block block) => ComputeBlockHash(block, block.Nonce);
+	string ComputeBlockHash(Block block);
+	string ComputeBlockHash(Block block, ulong nonce);
+}
 
-	public static string ComputeBlockHash(Block block, ulong nonce)
+public class BlockHashService : IBlockHashService
+{
+	public string ComputeBlockHash(Block block) => ComputeBlockHash(block, block.Nonce);
+
+	public string ComputeBlockHash(Block block, ulong nonce)
 	{
 		var canonical = $"{block.Index}|{block.TimestampUnixMs}|{block.PreviousHash}|{block.Data}|{block.Difficulty}|{nonce}";
 		var bytes = Encoding.UTF8.GetBytes(canonical);
@@ -19,7 +25,7 @@ internal class BlockHashService
 	/// Converts byte array to lowercase hexadecimal string.
 	/// Lowercase hex is the standard format for blockchain hashes.
 	/// </summary>
-	public static string ToHexString(byte[] hashBytes)
+	private static string ToHexString(byte[] hashBytes)
 	{
 		var sb = new StringBuilder(hashBytes.Length * 2);
 

@@ -2,7 +2,8 @@
 using LearningBlockchain.Services;
 
 var proofOfWorkSettings = new ProofOfWorkSettings(1, 1000000, 10, 10000);
-var miningService = new MiningService(proofOfWorkSettings);
+var blockHashService = new BlockHashService();
+var miningService = new MiningService(proofOfWorkSettings, blockHashService);
 var blockchain = new Blockchain(proofOfWorkSettings, miningService);
 
 while (true)
@@ -52,8 +53,16 @@ while (true)
 		case "3":
 			try
 			{
-				await foreach (var block in blockchain.ValidateBlocks())
+				await foreach (var result in blockchain.ValidateBlocks())
+				{
+					var block = result.Block;
 					Console.WriteLine($"{block.Index,3}|{block.TimestampUnixMs}|{block.PreviousHash}|{block.Hash}|{block.Difficulty,3}|{block.Nonce,3}|{block.Data}");
+
+					if (!result.IsValid)
+					{
+						Console.WriteLine("The last displayed block in chain is invalid!");
+					}
+				}
 			}
 			catch (Exception ex)
 			{

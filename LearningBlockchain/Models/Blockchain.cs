@@ -5,10 +5,10 @@ namespace LearningBlockchain.Models;
 internal class Blockchain
 {
 	private readonly ProofOfWorkSettings _settings;
-	private readonly MiningService _miningService;
+	private readonly IMiningService _miningService;
 	private List<Block> Chain { get; set; } = [];
 
-	public Blockchain(ProofOfWorkSettings proofOfWorkSettings, MiningService miningService)
+	public Blockchain(ProofOfWorkSettings proofOfWorkSettings, IMiningService miningService)
 	{
 		_settings = proofOfWorkSettings ?? throw new ArgumentNullException(nameof(proofOfWorkSettings));
 		_miningService = miningService ?? throw new ArgumentNullException(nameof(miningService));
@@ -32,17 +32,23 @@ internal class Blockchain
 		return Chain.AsReadOnly();
 	}
 
-	public async IAsyncEnumerable<Block> ValidateBlocks()
+	public async IAsyncEnumerable<ValidationResult> ValidateBlocks()
 	{
 		for (int i = 0; i < Chain.Count; i++)
 		{
-			await Task.Yield();
 			var block = Chain[i];
 
-			if ( _miningService.IsValidBlock(block))
-				yield return block;
+			if (_miningService.IsValidBlock(block))
+			{
+				await Task.Yield();
+				yield return ValidationResult.Success(block);
+			}
 			else
-				throw new InvalidOperationException($"Block {i} has invalid hash.");
+			{
+				await Task.Yield();
+				yield return ValidationResult.Failure(block);
+				break;
+			}
 		}
 	}
 }
