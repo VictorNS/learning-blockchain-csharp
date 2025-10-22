@@ -15,8 +15,7 @@ public class BlockHashService : IBlockHashService
 
 	public string ComputeBlockHash(Block block, ulong nonce)
 	{
-		var canonical = $"{block.Index}|{block.TimestampUnixMs}|{block.PreviousHash}|{block.Data}|{block.Difficulty}|{nonce}";
-		var bytes = Encoding.UTF8.GetBytes(canonical);
+		var bytes = Encoding.UTF8.GetBytes(block.GetCanonical(nonce));
 		var hashBytes = System.Security.Cryptography.SHA256.HashData(bytes);
 		return ToHexString(hashBytes);
 	}

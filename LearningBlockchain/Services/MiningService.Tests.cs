@@ -7,7 +7,7 @@ namespace LearningBlockchain.Services;
 public class MiningServiceTests
 {
 	private readonly ProofOfWorkSettings _defaultSettings = new(0, 0, 0, 0);
-	private readonly Block _defaultBlock = new(1, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "0", "Text", 0, "", 0);
+	private readonly Block _defaultBlock = new(1, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "0", "Text", 0, "", 0, "");
 
 	[Fact]
 	public void MineBlock_FindsValidNonceForDifficulty1()
@@ -71,7 +71,7 @@ public class MiningServiceTests
 			blockHashService);
 
 		// Act
-		var actual = service.IsValidBlock(_defaultBlock with { Hash = "000abcdef", Difficulty = 3, Nonce = 11 });
+		var actual = service.VerifyBlock(_defaultBlock with { Hash = "000abcdef", Difficulty = 3, Nonce = 11 });
 
 		// Assert
 		Assert.True(actual);
@@ -92,7 +92,7 @@ public class MiningServiceTests
 			blockHashService);
 
 		// Act
-		var actual = service.IsValidBlock(_defaultBlock with { Hash = "000abracadabra", Difficulty = 3, Nonce = 11 });
+		var actual = service.VerifyBlock(_defaultBlock with { Hash = "000abracadabra", Difficulty = 3, Nonce = 11 });
 
 		// Assert
 		Assert.False(actual);

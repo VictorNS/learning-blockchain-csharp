@@ -11,8 +11,8 @@ public class BlockHashServiceTests
 		// Arrange
 		var service = new BlockHashService();
 		var timestampUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-		var block1 = new Block(0, timestampUnixMs, "0", "0001", 0, "", 0);
-		var block2 = new Block(0, timestampUnixMs, "0", "0002", 0, "", 0);
+		var block1 = new Block(0, timestampUnixMs, "0", "0001", 0, "", 0, "");
+		var block2 = new Block(0, timestampUnixMs, "0", "0002", 0, "", 0, "");
 
 		// Act
 		var hash1 = service.ComputeBlockHash(block1);

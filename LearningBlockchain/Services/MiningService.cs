@@ -4,7 +4,7 @@ namespace LearningBlockchain.Services;
 
 public interface IMiningService
 {
-	bool IsValidBlock(Block block);
+	bool VerifyBlock(Block block);
 	Block MineBlock(Block block);
 }
 
@@ -34,7 +34,7 @@ public class MiningService : IMiningService
 		throw new InvalidOperationException("Failed to mine block: nonce space exhausted.");
 	}
 
-	public bool IsValidBlock(Block block)
+	public bool VerifyBlock(Block block)
 	{
 		var hash = _blockHashService.ComputeBlockHash(block, block.Nonce);
 		return hash == block.Hash && hash.StartsWith(new string('0', (int)block.Difficulty), StringComparison.Ordinal);
