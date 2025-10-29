@@ -7,14 +7,37 @@ internal class Blockchain
 	private readonly ProofOfWorkSettings _settings;
 	private readonly IMiningService _miningService;
 	private readonly IBlockSigner _blockSigner;
+	private readonly IBlockchainStorage _blockchainStorage;
 	private List<Block> Chain { get; set; } = [];
 
-	public Blockchain(ProofOfWorkSettings proofOfWorkSettings, IMiningService miningService, IBlockSigner blockSigner)
+	public Blockchain(ProofOfWorkSettings proofOfWorkSettings, IMiningService miningService, IBlockSigner blockSigner, IBlockchainStorage blockchainStorage)
 	{
 		_settings = proofOfWorkSettings;
 		_miningService = miningService;
 		_blockSigner = blockSigner;
-		AddGenesisBlock();
+		_blockchainStorage = blockchainStorage;
+	}
+
+	public async Task Initialize()
+	{
+		Chain = _blockchainStorage.Load();
+
+		if (Chain.Count == 0)
+		{
+			AddGenesisBlock();
+		}
+		else
+		{
+			await foreach (var result in ValidateEntireChain())
+			{
+				if (!result.IsValid)
+				{
+					Console.WriteLine($"✗ Chain integrity failed at block {result.Block.Index}: {result.Message}");
+					Chain = [];
+					break;
+				}
+			}
+		}
 	}
 
 	private void AddGenesisBlock()
@@ -29,6 +52,7 @@ internal class Blockchain
 		var minedBlock = _miningService.MineBlock(block);
 		var signedBlock = minedBlock with { Signature = _blockSigner.SignBlock(minedBlock) };
 		Chain.Add(signedBlock);
+		_blockchainStorage.Save(Chain);
 	}
 
 	public IReadOnlyList<Block> GetBlocks()

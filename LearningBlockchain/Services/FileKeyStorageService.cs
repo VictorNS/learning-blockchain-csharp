@@ -12,14 +12,14 @@ public class FileKeyStorageService : IKeyStorageService, IDisposable
 {
 	private const string KeyFileName = "blockchain_private_key.xml";
 	private readonly string _appFolder;
-	private readonly string _keyPath;
+	private readonly string _filePath;
 	private RSA? _rsa;
 	private bool disposedValue;
 
 	public FileKeyStorageService(string appFolder)
 	{
 		_appFolder = appFolder;
-		_keyPath = Path.Combine(_appFolder, KeyFileName);
+		_filePath = Path.Combine(_appFolder, KeyFileName);
 	}
 
 	public RSA LoadOrGenerateKey()
@@ -52,16 +52,17 @@ public class FileKeyStorageService : IKeyStorageService, IDisposable
 
 		try
 		{
-			if (File.Exists(_keyPath))
+			if (File.Exists(_filePath))
 			{
-				var keyXml = File.ReadAllText(_keyPath);
+				var keyXml = File.ReadAllText(_filePath);
 				rsa = RSA.Create();
 				rsa.FromXmlString(keyXml);
 				return rsa;
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			Console.WriteLine($"Error reading RSA key from file: {ex.Message}");
 			rsa?.Dispose();
 		}
 
@@ -76,7 +77,7 @@ public class FileKeyStorageService : IKeyStorageService, IDisposable
 		{
 			rsa = RSA.Create(2048);
 			var keyXml = rsa.ToXmlString(true);
-			File.WriteAllText(_keyPath, keyXml);
+			File.WriteAllText(_filePath, keyXml);
 			return rsa;
 		}
 		catch

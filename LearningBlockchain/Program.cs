@@ -5,11 +5,13 @@ var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApp
 var appFolder = Path.Combine(appDataFolder, "LearningBlockchain");
 var proofOfWorkSettings = new ProofOfWorkSettings(1, 1000000, 10, 10000);
 
-var fileKeyStorageService= new FileKeyStorageService(appFolder);
+var fileKeyStorageService = new FileKeyStorageService(appFolder);
+var blockchainStorage = new FileBlockchainStorage(appFolder);
 var blockSigner = new BlockSigner(fileKeyStorageService);
 var blockHashService = new BlockHashService();
 var miningService = new MiningService(proofOfWorkSettings, blockHashService);
-var blockchain = new Blockchain(proofOfWorkSettings, miningService, blockSigner);
+var blockchain = new Blockchain(proofOfWorkSettings, miningService, blockSigner, blockchainStorage);
+await blockchain.Initialize();
 
 while (true)
 {

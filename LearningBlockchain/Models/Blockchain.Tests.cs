@@ -8,9 +8,15 @@ public class BlockchainTests
 {
 	private readonly ProofOfWorkSettings _defaultSettings = new(0, 0, 0, 0);
 	private readonly Block _defaultBlock = new(1, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "0", "Text", 0, "", 0, "");
+	private readonly IBlockchainStorage _blockchainStorage = Substitute.For<IBlockchainStorage>();
+
+	public BlockchainTests()
+	{
+		_blockchainStorage.Load().Returns([]);
+	}
 
 	[Fact]
-	public void Constructor_CreatesGenesisBlock()
+	public async Task Constructor_CreatesGenesisBlock()
 	{
 		// Arrange
 		var miningService = Substitute.For<IMiningService>();
@@ -26,7 +32,9 @@ public class BlockchainTests
 		var service = new Blockchain(
 			_defaultSettings with { MaxNonceAttempts = 0 },
 			miningService,
-			blockSigner);
+			blockSigner,
+			_blockchainStorage);
+		await service.Initialize();
 
 		// Act
 		var actual = service.GetBlocks();
@@ -42,7 +50,7 @@ public class BlockchainTests
 	}
 
 	[Fact]
-	public void AddBlock_CreatesBlockWithCorrectPreviousHashAndIndex()
+	public async Task AddBlock_CreatesBlockWithCorrectPreviousHashAndIndex()
 	{
 		// Arrange
 		var miningService = Substitute.For<IMiningService>();
@@ -62,7 +70,9 @@ public class BlockchainTests
 		var service = new Blockchain(
 			_defaultSettings with { Difficulty = 1, MaxNonceAttempts = 2 },
 			miningService,
-			blockSigner);
+			blockSigner,
+			_blockchainStorage);
+		await service.Initialize();
 
 		// Act
 		service.AddBlock("block1");
@@ -117,11 +127,15 @@ public class BlockchainTests
 
 		blockSigner.SignBlock(Arg.Any<Block>())
 			.Returns("fake_signature");
+		blockSigner.VerifyBlock(Arg.Any<Block>())
+			.Returns(true);
 
 		var service = new Blockchain(
 			_defaultSettings with { Difficulty = 1, MaxNonceAttempts = 2 },
 			miningService,
-			blockSigner);
+			blockSigner,
+			_blockchainStorage);
+		await service.Initialize();
 
 		// Act
 		service.AddBlock("block1");
@@ -173,11 +187,15 @@ public class BlockchainTests
 
 		blockSigner.SignBlock(Arg.Any<Block>())
 			.Returns("fake_signature");
+		blockSigner.VerifyBlock(Arg.Any<Block>())
+			.Returns(true);
 
 		var service = new Blockchain(
 			_defaultSettings with { Difficulty = 1, MaxNonceAttempts = 2 },
 			miningService,
-			blockSigner);
+			blockSigner,
+			_blockchainStorage);
+		await service.Initialize();
 
 		// Act
 		service.AddBlock("block1");
@@ -206,7 +224,7 @@ public class BlockchainTests
 	}
 
 	[Fact]
-	public void ValidateChainIntegrity_ReturnsValidBlock()
+	public async Task ValidateChainIntegrity_ReturnsValidBlock()
 	{
 		// Arrange
 		var miningService = Substitute.For<IMiningService>();
@@ -226,7 +244,9 @@ public class BlockchainTests
 		var service = new Blockchain(
 			_defaultSettings with { Difficulty = 1, MaxNonceAttempts = 2 },
 			miningService,
-			blockSigner);
+			blockSigner,
+			_blockchainStorage);
+		await service.Initialize();
 
 		// Act
 		service.AddBlock("block1");
